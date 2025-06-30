@@ -1,0 +1,2 @@
+# minecraft-hacks
+Minescript
