@@ -1,9 +1,12 @@
-import minescript  # Import the Minescript module so we can use its functions
+import minescript  # Import Minescript module to access game data
 
-# Get a list of up to 10 nearby entities
+# Get up to 10 nearby entities
 entities = minescript.entities(limit=10)
 
-# Loop through each entity in the list
+# Loop through each entity
 for e in entities:
-    # Display the entity's name, type (like 'minecraft:zombie'), and its position (x, y, z)
-    minescript.echo(f"{e.name} ({e.type}) at {e.position}")
+    # Extract the position (x, y, z) and convert to integers to remove decimals
+    x, y, z = map(int, e.position)
+
+    # Display the entity's name, type, and rounded position
+    minescript.echo(f"{e.name} ({e.type}) at ({x}, {y}, {z})")
