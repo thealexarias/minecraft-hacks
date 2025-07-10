@@ -1,10 +1,11 @@
 import minescript, time
 from minescript import EventQueue, EventType
+import queue  # Needed to handle Empty exceptions
 
 # Get the current item in the player's main hand
 hand = minescript.player_hand_items()
-item = hand.main_hand.item         # The item type (e.g. "minecraft.netherrack")
-slot = hand.main_hand.slot         # The hotbar slot it's in (0–8)
+item = hand.main_hand.item
+slot = hand.main_hand.slot
 
 # Notify the player that the bridge script is starting
 minescript.echo(f"Starting bridge with {item} in slot {slot}")
@@ -31,11 +32,14 @@ try:
                 break
 
             # Check for key presses that should stop the script
-            while q.get(block=False, timeout=0.01) as event:
+            try:
+                event = q.get(block=False, timeout=0.01)
                 if event.type == EventType.KEY and event.action == 1:  # 1 = key down
                     if event.key in movement_keys:
                         minescript.echo(f"Stopped: Movement key pressed (code {event.key})")
-                        raise KeyboardInterrupt
+                        break
+            except queue.Empty:
+                pass  # No key press event this cycle
 
             # Get the player's current position and orientation
             x, y, z = minescript.player_position()
@@ -60,10 +64,6 @@ try:
 
             # Wait a short time before placing the next block
             time.sleep(0.3)
-
-except KeyboardInterrupt:
-    # Catch manual interruptions or triggered stop
-    pass
 
 finally:
     # Release all movement and use keys
