@@ -1,72 +1,61 @@
-import minescript, time
+import minescript, time, math
 from minescript import EventQueue, EventType
-import queue  # Needed to handle Empty exceptions
+import queue
 
-# Get the current item in the player's main hand
-hand = minescript.player_hand_items()
-item = hand.main_hand.item
-slot = hand.main_hand.slot
+# Setup: get starting item and slot
+start_hand = minescript.player_hand_items().main_hand
+start_item = start_hand.item
+start_slot = start_hand.slot
 
-# Notify the player that the bridge script is starting
-minescript.echo(f"Starting bridge with {item} in slot {slot}")
+minescript.echo(f"Bridging with {start_item} in slot {start_slot}")
 
-# Begin moving backward and sneaking
+# Begin movement
 minescript.player_press_backward(True)
 minescript.player_press_sneak(True)
 
-# Key codes for movement-related keys: W, A, S, D, Space, Shift, Ctrl
-movement_keys = {87, 65, 83, 68, 32, 340, 341}
+# Movement key codes to cancel bridge
+cancel_keys = {87, 65, 83, 68, 32, 340, 341}  # W A S D Space Shift Ctrl
 
 try:
-    # Set up event listener to watch for key presses
-    with EventQueue() as q:
-        q.register_key_listener()
+    with EventQueue() as events:
+        events.register_key_listener()
 
         while True:
-            # Check the current main hand item
-            hand_now = minescript.player_hand_items().main_hand
+            # Cancel if movement key is pressed
+            try:
+                event = events.get(block=False, timeout=0.01)
+                if event.type == EventType.KEY and event.action == 1:
+                    if event.key in cancel_keys:
+                        minescript.echo("Stopped: Movement key pressed.")
+                        break
+            except queue.Empty:
+                pass
 
-            # Stop if the player switched items or ran out of blocks
-            if hand_now.slot != slot or hand_now.item != item or hand_now.count <= 0:
+            # Cancel if item is changed or depleted
+            hand = minescript.player_hand_items().main_hand
+            if hand.slot != start_slot or hand.item != start_item or hand.count <= 0:
                 minescript.echo("Stopped: Item changed or ran out.")
                 break
 
-            # Check for key presses that should stop the script
-            try:
-                event = q.get(block=False, timeout=0.01)
-                if event.type == EventType.KEY and event.action == 1:  # 1 = key down
-                    if event.key in movement_keys:
-                        minescript.echo(f"Stopped: Movement key pressed (code {event.key})")
-                        break
-            except queue.Empty:
-                pass  # No key press event this cycle
-
-            # Get the player's current position and orientation
+            # Compute placement position
             x, y, z = minescript.player_position()
             yaw, _ = minescript.player_orientation()
 
-            # Calculate direction vector based on yaw
-            dx = round(-minescript.math.sin(yaw))
-            dz = round(minescript.math.cos(yaw))
+            # Determine block position behind and below
+            dx = round(-math.sin(math.radians(yaw)))
+            dz = round(math.cos(math.radians(yaw)))
+            px, py, pz = int(x) + dx, int(y) - 1, int(z) + dz
 
-            # Determine where to place the block (behind and below the player)
-            place_x = int(x) + dx
-            place_y = int(y) - 1
-            place_z = int(z) + dz
-
-            # Rotate the camera to look at the center of the target block
-            minescript.player_look_at(place_x + 0.5, place_y + 0.5, place_z + 0.5)
-
-            # Simulate right-click to place a block
+            # Look and place
+            minescript.player_look_at(px + 0.5, py + 0.5, pz + 0.5)
             minescript.player_press_use(True)
             time.sleep(0.1)
             minescript.player_press_use(False)
 
-            # Wait a short time before placing the next block
             time.sleep(0.3)
 
 finally:
-    # Release all movement and use keys
+    # Always release keys
     minescript.player_press_backward(False)
     minescript.player_press_sneak(False)
     minescript.player_press_use(False)
