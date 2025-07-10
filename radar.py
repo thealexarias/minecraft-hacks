@@ -5,8 +5,8 @@ entities = minescript.entities(limit=10)
 
 # Loop through each entity
 for e in entities:
-    # Extract the position (x, y, z) and convert to integers to remove decimals
+    # Convert position to integers (x, y, z)
     x, y, z = map(int, e.position)
 
-    # Display the entity's name, type, and rounded position
-    minescript.echo(f"{e.name} ({e.type}) at ({x}, {y}, {z})")
+    # Display just the entity's name and position
+    minescript.echo(f"{e.name} at ({x}, {y}, {z})")
