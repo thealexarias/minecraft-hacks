@@ -29,7 +29,7 @@ def wait_for_bobber_despawn(timeout=3):
         time.sleep(0.1)
     return False
 
-def bobber_dipped(initial_y, threshold=0.5):
+def bobber_dipped(initial_y, threshold=0.1):
     b = find_bobber()
     if b and isinstance(b.position, list):
         return (initial_y - b.position[1]) > threshold
@@ -55,6 +55,7 @@ def auto_fish_with_key_stop():
             player_press_use(True)
             time.sleep(0.1)
             player_press_use(False)
+            time.sleep(2) # waitr for bobber to land
 
             # Wait for bobber
             bobber = wait_for_bobber()
