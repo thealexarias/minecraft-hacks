@@ -55,7 +55,7 @@ def auto_fish_with_key_stop():
             player_press_use(True)
             time.sleep(0.1)
             player_press_use(False)
-            time.sleep(2) # waitr for bobber to land
+            time.sleep(2) # wait for bobber to land
 
             # Wait for bobber
             bobber = wait_for_bobber()
