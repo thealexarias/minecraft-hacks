@@ -29,7 +29,7 @@ def wait_for_bobber_despawn(timeout=3):
         time.sleep(0.1)
     return False
 
-def bobber_dipped(initial_y, threshold=0.25):
+def bobber_dipped(initial_y, threshold=0.5):
     b = find_bobber()
     if b and isinstance(b.position, list):
         return (initial_y - b.position[1]) > threshold
