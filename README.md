@@ -1,3 +1,3 @@
 # minecraft-hacks
 Minescript
-F3 + P
+use F3 + P to toggle off "pause on lost focus"
